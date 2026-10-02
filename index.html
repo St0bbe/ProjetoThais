@@ -4,7 +4,7 @@
 <textarea class="prompt" id="prompt" placeholder="Ex.: Crie um vídeo infantil educativo de 60 segundos ensinando círculo, quadrado, triângulo e retângulo. Colorido, divertido e com linguagem simples..."></textarea>
 <div class="options"><div class="field"><label>DURAÇÃO</label><select id="duration"><option>30 segundos</option><option selected>60 segundos</option><option>90 segundos</option></select></div><div class="field"><label>FORMATO</label><select id="format"><option selected>9:16 • Reels/Shorts</option><option>16:9 • YouTube</option><option>1:1 • Feed</option></select></div><div class="field"><label>ESTILO VISUAL</label><select><option>Infantil 3D</option><option>Cinematográfico</option><option>Realista</option><option>Anime</option><option>Ilustração</option></select></div><div class="field"><label>IDIOMA</label><select><option>Português (Brasil)</option><option>Inglês</option><option>Espanhol</option></select></div></div>
 <div class="checks"><label class="check"><span>🎙️ Narração IA<small>Voz sincronizada com as cenas</small></span><input class="switch" type="checkbox" checked></label><label class="check"><span>🎵 Música de fundo<small>Trilha adequada ao tema</small></span><input class="switch" type="checkbox" checked></label><label class="check"><span>💬 Legendas automáticas<small>Sincronizadas com a narração</small></span><input class="switch" type="checkbox" checked></label></div>
-<button class="generate" id="generate">✨ Gerar vídeo com IA</button><div class="note">A interface está pronta para o pipeline de geração. Para produzir MP4 real, o backend precisa das APIs de geração de cena/vídeo, voz e renderização.</div></section>
+<button class="generate" id="generate">✨ Gerar vídeo com IA</button><div class="note">O gerador usa os motores locais configurados no servidor para criar cenas, voz, legendas, música e o MP4 final.</div></section>
 <aside class="card"><div class="phone"><div class="empty" id="empty">🎬<strong>Seu vídeo aparecerá aqui</strong>Digite o prompt e toque em “Gerar vídeo com IA”.</div></div><div class="steps"><div class="step" id="s1"><i class="dot"></i>1. Interpretar prompt e criar roteiro</div><div class="step" id="s2"><i class="dot"></i>2. Gerar cenas e imagens</div><div class="step" id="s3"><i class="dot"></i>3. Criar narração e música</div><div class="step" id="s4"><i class="dot"></i>4. Sincronizar legendas</div><div class="step" id="s5"><i class="dot"></i>5. Renderizar vídeo MP4</div></div></aside></div></main>
 <script>
 const btn=document.querySelector('#generate'),p=document.querySelector('#prompt'),empty=document.querySelector('#empty');
@@ -18,6 +18,10 @@ try{
  const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p.value,duration,format,voice:checks[0],music:checks[1],captions:checks[2]})});
  const data=await r.json(); if(!r.ok) throw new Error(data.error||'Falha ao gerar');
  empty.innerHTML='📝<strong>Roteiro criado</strong>'+data.scenes.length+' cenas preparadas para um vídeo de '+data.duration+' segundos.<br><small>Job: '+data.id.slice(0,8)+'</small>';
- steps[1].classList.add('on');btn.textContent='Continuar geração';
+ steps[1].classList.add('on');btn.textContent='Gerando cenas, voz e vídeo...';
+ const b=await fetch('/api/jobs/'+data.id+'/build',{method:'POST'});const built=await b.json();if(!b.ok)throw new Error(built.error||'Falha na montagem');
+ steps.forEach(x=>x.classList.add('on'));
+ empty.innerHTML='<video src="'+built.video+'" controls playsinline style="width:100%;height:100%;object-fit:contain"></video>';
+ btn.textContent='✨ Gerar outro vídeo';
 }catch(e){empty.innerHTML='⚠️<strong>Não foi possível iniciar</strong>'+e.message+'<br><small>Este link precisa hospedar também o backend Node.js; GitHub Pages serve apenas a interface.</small>';btn.textContent='Tentar novamente'}finally{btn.disabled=false}}
 </script></body></html>
