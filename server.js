@@ -1,3 +1,8 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import { scenesToSrt } from "./lib/subtitles.js";
+import { synthesizeNarration } from "./lib/tts.js";
+import { hasFfmpeg } from "./lib/render.js";
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,6 +21,9 @@ app.post("/api/generate",async(req,res)=>{
  jobs.set(id,job); job.scenes=makePlan(prompt,Number(duration)); job.status="planned"; job.progress=25;
  res.json(job);
 });
+app.post("/api/jobs/:id/audio",async(req,res)=>{const j=jobs.get(req.params.id);if(!j)return res.status(404).json({error:"Job não encontrado"});try{const dir=path.join(__dirname,"output",j.id);await fs.mkdir(dir,{recursive:true});const srt=scenesToSrt(j.scenes);await fs.writeFile(path.join(dir,"captions.srt"),srt);const narration=j.scenes.map(x=>x.narration).join(" ");const audio=path.join(dir,"narration.wav");await synthesizeNarration(narration,audio);j.status="audio_ready";j.progress=55;j.audio="/output/"+j.id+"/narration.wav";j.captions="/output/"+j.id+"/captions.srt";res.json(j)}catch(e){res.status(500).json({error:e.message})}});
+app.get("/api/capabilities",async(_,res)=>res.json({ffmpeg:await hasFfmpeg(),tts:!!process.env.KOKORO_URL,captions:true,render:true}));
+app.use("/output",express.static(path.join(__dirname,"output")));
 app.get("/api/jobs/:id",(req,res)=>{const j=jobs.get(req.params.id);if(!j)return res.status(404).json({error:"Job não encontrado"});res.json(j)});
 app.get("/api/health",(_,res)=>res.json({ok:true,service:"Thais AI Video"}));
 app.listen(process.env.PORT||3000,()=>console.log("Thais AI Video em http://localhost:"+(process.env.PORT||3000)));
