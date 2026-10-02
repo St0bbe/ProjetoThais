@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Thais Studio — Criador de Vídeos</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,sans-serif;background:#09090b;color:#fafafa}button,input,select,textarea{font:inherit}.app{max-width:1180px;margin:auto;min-height:100vh;padding:16px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.brand{font-weight:900;font-size:21px}.brand span{color:#a78bfa}.pill{font-size:12px;color:#c4b5fd;background:#2e1065;border:1px solid #6d28d9;padding:7px 10px;border-radius:99px}.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:16px}.card{background:#18181b;border:1px solid #27272a;border-radius:20px;padding:16px;box-shadow:0 12px 40px #0005}.preview{aspect-ratio:9/16;max-height:68vh;margin:auto;background:linear-gradient(145deg,#18181b,#09090b);border:1px solid #3f3f46;border-radius:18px;overflow:hidden;position:relative;display:grid;place-items:center}.preview video{width:100%;height:100%;object-fit:cover}.empty{text-align:center;padding:28px;color:#a1a1aa}.empty b{display:block;color:#fafafa;font-size:20px;margin:8px}.upload{display:inline-block;background:#7c3aed;color:#fff;padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer}.upload input{display:none}.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.controls button,.btn{border:0;border-radius:12px;background:#27272a;color:#fff;padding:12px;cursor:pointer}.btn.primary{background:#7c3aed;font-weight:900;width:100%;margin-top:12px}.field{margin:12px 0}.field label{display:block;font-size:13px;color:#a1a1aa;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;background:#09090b;border:1px solid #3f3f46;color:#fff;border-radius:11px;padding:11px}.field textarea{min-height:90px;resize:vertical}.chips{display:flex;flex-wrap:wrap;gap:7px}.chip{border:1px solid #3f3f46;background:#27272a;color:#ddd;border-radius:99px;padding:8px 10px;cursor:pointer}.chip.on{background:#5b21b6;border-color:#8b5cf6;color:white}.timeline{margin-top:12px;background:#09090b;border-radius:12px;padding:10px}.bar{height:7px;border-radius:9px;background:#3f3f46;overflow:hidden}.bar i{display:block;width:0;height:100%;background:#8b5cf6}.small{font-size:12px;color:#71717a;margin-top:7px}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fafafa;color:#18181b;padding:10px 15px;border-radius:99px;font-weight:700;display:none;z-index:9}
+@media(max-width:760px){.app{padding:12px}.grid{grid-template-columns:1fr}.preview{max-height:58vh}.card{border-radius:16px;padding:12px}.controls{grid-template-columns:repeat(2,1fr)}.top{margin-bottom:12px}.pill{display:none}}
+</style></head>
+<body><main class="app"><header class="top"><div class="brand">THAIS <span>STUDIO</span></div><div class="pill">Criador de vídeos • Mobile</div></header>
+<section class="grid"><div class="card"><div class="preview" id="preview"><div class="empty" id="empty">🎬<b>Comece seu vídeo</b>Escolha um vídeo do celular ou computador<br><br><label class="upload">Selecionar vídeo<input id="file" type="file" accept="video/*"></label></div><video id="video" playsinline controls hidden></video></div>
+<div class="controls"><button id="play">▶ Reproduzir</button><button id="mute">🔊 Áudio</button><button id="fit">▣ Preencher</button><button id="clear">↺ Trocar vídeo</button></div>
+<div class="timeline"><div class="bar"><i id="progress"></i></div><div class="small" id="time">00:00 / 00:00</div></div></div>
+<aside class="card"><h2 style="margin:2px 0 14px">Criar vídeo</h2>
+<div class="field"><label>Formato</label><div class="chips" id="formats"><button class="chip on" data-ratio="9/16">9:16 Reels</button><button class="chip" data-ratio="1/1">1:1 Post</button><button class="chip" data-ratio="16/9">16:9 YouTube</button></div></div>
+<div class="field"><label>Título do projeto</label><input id="title" placeholder="Meu novo vídeo"></div>
+<div class="field"><label>Texto / roteiro</label><textarea id="script" placeholder="Escreva aqui a ideia, legenda ou roteiro do vídeo..."></textarea></div>
+<div class="field"><label>Estilo</label><select id="style"><option>Dinâmico</option><option>Cinematográfico</option><option>Minimalista</option><option>Viral / Reels</option><option>Storytelling</option></select></div>
+<div class="field"><label>Velocidade</label><input id="speed" type="range" min=".5" max="2" value="1" step=".25"><div class="small" id="speedText">1x</div></div>
+<button class="btn primary" id="create">✨ Preparar projeto</button><div class="small">Protótipo inicial: edição e prévia rodam no próprio navegador.</div></aside></section></main><div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s), video=$('#video'), file=$('#file'), toast=$('#toast');
+const msg=t=>{toast.textContent=t;toast.style.display='block';setTimeout(()=>toast.style.display='none',2200)}
+file.onchange=()=>{const f=file.files[0];if(!f)return;video.src=URL.createObjectURL(f);video.hidden=false;$('#empty').hidden=true;msg('Vídeo carregado!')};
+$('#play').onclick=()=>video.paused?video.play():video.pause();
+video.onplay=()=>$('#play').textContent='⏸ Pausar';video.onpause=()=>$('#play').textContent='▶ Reproduzir';
+$('#mute').onclick=()=>{video.muted=!video.muted;$('#mute').textContent=video.muted?'🔇 Mudo':'🔊 Áudio'};
+$('#fit').onclick=()=>{video.style.objectFit=video.style.objectFit==='contain'?'cover':'contain';msg(video.style.objectFit==='contain'?'Ajustado':'Preenchendo tela')};
+$('#clear').onclick=()=>{video.pause();video.removeAttribute('src');video.load();video.hidden=true;$('#empty').hidden=false;file.value=''};
+$('#speed').oninput=e=>{video.playbackRate=+e.target.value;$('#speedText').textContent=e.target.value+'x'};
+const fmt=n=>String(Math.floor(n/60)).padStart(2,'0')+':'+String(Math.floor(n%60)).padStart(2,'0');
+video.ontimeupdate=()=>{let d=video.duration||0,c=video.currentTime||0;$('#progress').style.width=(d?c/d*100:0)+'%';$('#time').textContent=fmt(c)+' / '+fmt(d)};
+document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('#preview').style.aspectRatio=b.dataset.ratio;msg('Formato '+b.textContent)});
+$('#create').onclick=()=>{if(!video.src)return msg('Selecione um vídeo primeiro');msg('Projeto preparado para edição ✓')};
+</script></body></html>
